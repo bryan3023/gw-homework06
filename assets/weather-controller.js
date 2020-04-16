@@ -9,7 +9,11 @@ let WeatherController = {
     this.model = WeatherModel;
     this.view = WeatherView;
 
-    this.model.start();
+    this.model.start(WeatherController.alertAjaxFailure);
+  },
+
+  alertAjaxFailure(xhr) {
+    alert(xhr.responseJSON.message);
   }
 }
 
