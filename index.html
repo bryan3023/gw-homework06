@@ -10,7 +10,7 @@
     <title>Weather Dashboard</title>
   </head>
 
-  <body>
+  <body class="bg-light">
 
     <header class="container-fluid">
       <div class="row text-light bg-dark py-1">
@@ -59,7 +59,7 @@
         <!--
           Weather information area.
         -->
-        <div class="col-12 col-sm-9 col-lg-8 bg-white vh-100">
+        <div id="weather-info" class="col-12 col-sm-9 col-lg-8 bg-white vh-100">
 
           <!--
             Today's forecast
@@ -86,63 +86,9 @@
               </div>
             </div>
             <div id="five-day-forecast" class="row">
-
-              <div class="col-sm-6 col-md-3 col-xl-2 mb-3 mb-sm-4">
-                <div class="card bg-primary text-light">
-                  <div class="card-body">
-                    <h5 class="card-title">4/15/2020</h5>
-                    <p class="card-text">[icon]</p>
-                    <p class="card-text">Temp: 86.84 F</p>
-                    <p class="card-text">Humidity: 43%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-sm-6 col-md-3 col-xl-2 mb-3 mb-sm-4">
-                <div class="card bg-primary text-light">
-                  <div class="card-body">
-                    <h5 class="card-title">4/15/2020</h5>
-                    <p class="card-text">[icon]</p>
-                    <p class="card-text">Temp: 86.84 F</p>
-                    <p class="card-text">Humidity: 43%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-sm-6 col-md-3 col-xl-2 mb-3 mb-sm-4">
-                <div class="card bg-primary text-light">
-                  <div class="card-body">
-                    <h5 class="card-title">4/15/2020</h5>
-                    <p class="card-text">[icon]</p>
-                    <p class="card-text">Temp: 86.84 F</p>
-                    <p class="card-text">Humidity: 43%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-sm-6 col-md-3 col-xl-2 mb-3 mb-sm-4">
-                <div class="card bg-primary text-light">
-                  <div class="card-body">
-                    <h5 class="card-title">4/15/2020</h5>
-                    <p class="card-text">[icon]</p>
-                    <p class="card-text">Temp: 86.84 F</p>
-                    <p class="card-text">Humidity: 43%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-sm-6 col-md-3 col-xl-2 mb-3 mb-sm-4">
-                <div class="card bg-primary text-light">
-                  <div class="card-body">
-                    <h5 class="card-title">4/15/2020</h5>
-                    <p class="card-text">[icon]</p>
-                    <p class="card-text">Temp: 86.84 F</p>
-                    <p class="card-text">Humidity: 43%</p>
-                  </div>
-                </div>
-              </div>
-
-
+              <!--
+                Cards for each day go here
+              -->
             </div>
           </div>
         </div>
@@ -157,5 +103,6 @@
     <script src="./assets/weather-model.js"></script>
     <script src="./assets/weather-view.js"></script>
     <script src="./assets/weather-controller.js"></script>
+
   </body>
 </html>

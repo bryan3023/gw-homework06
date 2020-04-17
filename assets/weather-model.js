@@ -3,8 +3,18 @@
 let WeatherModel = {
 
   openWeatherApiKey: "4211a163bd8258f32fbd3c7ed8d5c12e",
+
+  /*
+    Callback to notify of successful AJAX calls. Not wired up yet.
+   */
   successResponseCallback: null,
+
+
+  /*
+    Callback to notiffy of failed AJAX calls.
+   */
   failedResponseCallback: null,
+
 
   recentLocations: null,
 
@@ -20,8 +30,22 @@ let WeatherModel = {
     uvIndexSeverity: null
   },
 
+  /*
+    Each object of the format:
+      {
+        date: "MM/DD"
+        weatherDescription: "clear"
+        weatherIcon: "[icon URL]"
+        temperature: 67.5
+        humidity: 56
+      }
+   */
   fiveDayForecast: [],
 
+
+  /*
+    Initialize the model.
+   */
   start() {
     this.loadRecentLocations();
   },
@@ -32,10 +56,11 @@ let WeatherModel = {
     this.failedResponseCallback = failedResponseCallback;
   },
 
-  searchWeather(query) {
-    this.addRecentLocation(query);
-    this.queryOwCurrentWeather(query);
-    this.queryOwFiveDayForecast(query);
+
+  // --- Getters for the controller ---
+
+  getRecentPlaces() {
+    return this.recentLocations;
   },
 
 
@@ -44,13 +69,16 @@ let WeatherModel = {
   },
 
 
-  getRecentPlaces() {
-    return this.recentLocations;
+  getFiveDayForecast() {
+    return this.fiveDayForecast;
   },
-  
+
+
+  // --- Methods to manage the recent locations list ---
 
   /*
-    Add the location strng to the front of recent locations.
+    If the use searchs for a new location, add it to the front of
+    the list of recent locations.
    */
   addRecentLocation(location) {
     if (-1 === this.recentLocations.indexOf(location)) {
@@ -84,6 +112,23 @@ let WeatherModel = {
     localStorage.setItem("recentLocations", recentLocations);
   },
 
+
+  // --- Methods to get information from OpenWeather ---
+
+  /*
+    Process a weather search for both current and five day forecast,
+    then add the location to the list of recent searches.
+   */
+  searchWeather(query) {
+    this.queryOwCurrentWeather(query);
+    this.queryOwFiveDayForecast(query);
+    this.addRecentLocation(query);
+  },
+
+
+  /*
+    Get the the current weather from OpenWeather.
+   */
   queryOwCurrentWeather(query) {
     let queryUrl = this.getApiUrl(query, "weather");
 
@@ -102,59 +147,38 @@ let WeatherModel = {
     );
   },
 
-  queryOwFiveDayForecast(query) {
-    let queryUrl = this.getApiUrl(query, "forecast");
 
-    $.ajax({
-      url: queryUrl,
-      type: "GET"
-    }).then(
-      (successResponse) => {
-        console.log(successResponse);
-
-        let days = successResponse.list.filter(w => w.dt_txt.includes("00:00:00"))
-
-        this.fiveDayForecast = [];
-
-        for (let day of days) {
-          this.fiveDayForecast.push({
-            date: moment.unix(parseInt(day.dt)).format("MM/DD"),
-            weatherDescription: day.weather[0].description,
-            weatherIcon: `http://openweathermap.org/img/wn/${day.weather[0].icon}.png`,
-            temperature: this.convertKelvinToFahrenheit(parseFloat(day.main.temp)).toFixed(1),
-            humidity: parseFloat(day.main.humidity)
-          });
-        }
-
-        console.log(this.fiveDayForecast)
-      },
-      (failedResponse) => {
-        this.alertAjaxError(queryUrl, failedResponse);
-      }
-    );
-
+  /*
+    Set the current weather based on the AJAX response.
+   */
+  setCurrentWeather(response) {
+    this.currentWeather.locationName = this.getLocationName(response);
+    this.currentWeather.date = this.getWeatherTime(response);
+    this.currentWeather.weatherDescription = this.getWeatherDescription(response);
+    this.currentWeather.weatherIcon =  this.getWeatherIcon(response);
+    this.currentWeather.temperature = this.getTemperature(response);
+    this.currentWeather.humidity = this.getHumidity(response);
+    this.currentWeather.windSpeed = this.getWindSpeed(response);
   },
 
-  getFiveDayForecast() {
-    console.log(this.fiveDayForecast)
-    return this.fiveDayForecast;
-  },
 
-  queryOpenWeatherUvIndex(results) {
+  /*
+    Get the UV index from OpenWeather by using the (lat,lon) of the
+    current weather.
+   */
+  queryOpenWeatherUvIndex(response) {
     let
-      lat = results.coord.lat,
-      lon = results.coord.lon,
-      queryUrl =`https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${this.openWeatherApiKey}`,
-      result = null;
+      lat = response.coord.lat,
+      lon = response.coord.lon,
+      queryUrl =`https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${this.openWeatherApiKey}`;
 
     $.ajax({
       url: queryUrl,
       type: "GET"
     }).then(
       (successResponse) => {
-        this.currentWeather.uvIndex = parseFloat(successResponse.value);
-        this.currentWeather.uvIndexSeverity = this.getUvIndexSeverity(this.currentWeather.uvIndex);
-      console.log(this.currentWeather.uvIndexSeverity)
+        this.currentWeather.uvIndex = this.getUvIndex(successResponse);
+        this.currentWeather.uvIndexSeverity = this.getUvIndexSeverity();
       },
       (failedResponse) => {
         this.alertAjaxError(failedResponse);
@@ -163,45 +187,40 @@ let WeatherModel = {
   },
 
 
+  queryOwFiveDayForecast(query) {
+    let queryUrl = this.getApiUrl(query, "forecast");
 
+    $.ajax({
+      url: queryUrl,
+      type: "GET"
+    }).then(
+      (successResponse) => {
+        let days = successResponse.list.filter(day => day.dt_txt.includes("00:00:00"))
+
+        this.fiveDayForecast = [];
+
+        for (let day of days) {
+          this.fiveDayForecast.push({
+            date: this.getWeatherTime(day, true),
+            weatherDescription: this.getWeatherDescription(day),
+            weatherIcon: this.getWeatherIcon(day),
+            temperature: this.getTemperature(day),
+            humidity: this.getHumidity(day)
+          });
+        }
+      },
+      (failedResponse) => {
+        this.alertAjaxError(queryUrl, failedResponse);
+      }
+    );
+  },
+
+
+  // --- Methods to build the AJAX URLs and respond to errors ---
 
   /*
-    Categorize the UV index, using guidance here:
-      https://www.epa.gov/sunsafety/uv-index-scale-0
+    Build an API URL for today's weather or five-day forecasts.
    */
-  getUvIndexSeverity(uvIndex) {
-
-    if (!parseInt(uvIndex)) {
-      return "unknown"
-    } else if (uvIndex <= 2) {
-      return "low";
-    } else if (uvIndex <= 7) {
-      return "moderate";
-    } else {
-      return "veryHigh";
-    }
-  },
-
-
-  setCurrentWeather(response) {
-    this.currentWeather.locationName = response.name;
-    this.currentWeather.date = moment().format("MM/DD/YYYY");
-    this.currentWeather.weatherDescription = response.weather[0].description;
-    this.currentWeather.weatherIcon =  `http://openweathermap.org/img/wn/${response.weather[0].icon}.png`;
-    this.currentWeather.temperature = this.convertKelvinToFahrenheit(parseFloat(response.main.temp)).toFixed(1);
-    this.currentWeather.humidity = parseFloat(response.main.humidity);
-    this.currentWeather.windSpeed = this.convertMetersPerSecondToMilesPerHour(parseFloat(response.wind.speed)).toFixed(1);
-  },
-
-  alertAjaxError(queryUrl, xhr) {
-    console.log("Error on query: %s\n  status: %s\n  message: %s",
-      queryUrl,
-      xhr.status,
-      xhr.responseJSON.message
-    );
-    this.failedResponseCallback(xhr);
-  },
-
   getApiUrl(query,queryType) {
     let
       baseUrl = "https://api.openweathermap.org/data/2.5/",
@@ -242,10 +261,85 @@ let WeatherModel = {
   },
 
 
+  /*
+    Send errors to the log and raise an event so we can alert the user.
+   */
+  alertAjaxError(queryUrl, xhr) {
+    console.log("Error on query: %s\n  status: %s\n  message: %s",
+      queryUrl,
+      xhr.status,
+      xhr.responseJSON.message
+    );
+    this.failedResponseCallback(xhr);
+  },
+
+
+  // --- Methods to simplify extracting information of AJAX results ---
+
+  getLocationName(response) {
+    return response.name;
+  },
+
+
+  getWeatherTime(response, useShortDate) {
+    let format = useShortDate ? "MMM DD" : "MMMM DD";
+    return moment.unix(parseInt(response.dt)).format(format);
+  },
+
+
+  getWeatherDescription(response) {
+    return response.weather[0].description;
+  },
+
+
+  getWeatherIcon(response) {
+    return `http://openweathermap.org/img/wn/${response.weather[0].icon}.png`;
+  },
+
+
+  getTemperature(response) {
+    return this.convertKelvinToFahrenheit(parseFloat(response.main.temp)).toFixed(1);
+  },
+
+
+  getHumidity(response) {
+    return parseFloat(response.main.humidity);
+  },
+
+
+  getWindSpeed(response) {
+    return this.convertMetersPerSecondToMilesPerHour(parseFloat(response.wind.speed)).toFixed(1);
+  },
+
+
+  getUvIndex(response) {
+    return parseFloat(response.value);
+  },
+
+
+  /*
+    Categorize the UV index, using guidance here:
+      https://www.epa.gov/sunsafety/uv-index-scale-0
+   */
+  getUvIndexSeverity() {
+    let uvIndex = this.currentWeather.uvIndex;
+
+    if (!parseInt(uvIndex)) {
+      return "unknown"
+    } else if (uvIndex <= 2) {
+      return "low";
+    } else if (uvIndex <= 7) {
+      return "moderate";
+    } else {
+      return "veryHigh";
+    }
+  },
+
+
   // -- Unit conversion functions --
 
   convertKelvinToFahrenheit(tempKelvin) {
-    return (parseFloat(tempKelvin) - 273.15) * 1.80 + 32;
+    return (tempKelvin - 273.15) * 1.80 + 32;
   },
 
   convertMetersPerSecondToMilesPerHour(speedMps) {

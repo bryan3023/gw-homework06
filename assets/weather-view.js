@@ -2,6 +2,9 @@
 
 let WeatherView = {
 
+  /*
+    The search bar on the left side
+   */
   searchForm: {
     searchCallback: null,
 
@@ -10,7 +13,6 @@ let WeatherView = {
         event.preventDefault();
 
         let searchQuery = $("#searchInput").val();
-        console.log(searchQuery)
         this.searchCallback(searchQuery);
       });
     },
@@ -20,7 +22,10 @@ let WeatherView = {
     }
   },
 
-  //        <a href="#" class="list-group-item list-group-item-action">Washingon, DC</a>
+
+  /*
+    The list of recent searchs on the left side.
+   */
   recentPlaces: {
     searchCallback: null,
 
@@ -33,11 +38,9 @@ let WeatherView = {
         let placeA = $("<a>")
           .addClass("list-group-item list-group-item-action")
           .attr("href", "#")
-          .attr("data-value",place)
           .text(place)
           .on("click", event => {
             event.preventDefault();
-    
             this.searchCallback(event.target.text);
           })
 
@@ -62,6 +65,8 @@ let WeatherView = {
       currentWeatherHeader
         .text(`${currentWeather.locationName} (${currentWeather.date})`)
         .append(currentWeatherIcon);
+
+      $("#weather-info").show();
 
       let currentWeatherBody = $("#current-weather div div");
       currentWeatherBody.empty()
@@ -110,7 +115,6 @@ let WeatherView = {
       forecastCards.empty();
 
       for (let day of fiveDayForecast) {
-        console.log(fiveDayForecast)
         forecastCards.append(this.getForecastCard(day));
       }
     },
@@ -165,7 +169,11 @@ let WeatherView = {
           .append(cardDiv);
 
 
-        return cardColDiv;
+      return cardColDiv;
     }
+  },
+
+  hideDashboard() {
+    $("#weather-info").hide();
   }
 }
