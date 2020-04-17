@@ -16,7 +16,7 @@ let WeatherController = {
     this.model.start()
     this.model.setCallbacks(
       () => WeatherController.updateDashboard(),
-      () => WeatherController.reportFailure
+      (xhr) => WeatherController.reportFailure(xhr)
     );
 
     this.view.searchForm.setCallbacks(query => WeatherController.searchWeather(query));
