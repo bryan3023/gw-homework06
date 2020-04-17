@@ -60,7 +60,8 @@ let WeatherView = {
         currentWeatherIcon =
           $("<img>")
             .attr("src", currentWeather.weatherIcon)
-            .attr("alt", currentWeather.weatherDescription);
+            .attr("alt", currentWeather.weatherDescription)
+            .attr("crossorigin","anonymous");
 
       currentWeatherHeader
         .text(`${currentWeather.locationName} (${currentWeather.date})`)
@@ -77,7 +78,6 @@ let WeatherView = {
     },
 
     getCardText(text) {
-      //<p class="card-text">
       return $("<p>")
         .addClass("card-text")
         .text(text);
@@ -91,6 +91,7 @@ let WeatherView = {
           .text(currentWeather.uvIndex);
 
       uvP
+        .addClass("card-text")
         .text("UV Index: ")
         .append(uvSpan);
 
@@ -140,7 +141,8 @@ let WeatherView = {
 
         cardIconImg = $("<img>")
           .attr("src", forecastDay.weatherIcon)
-          .attr("alt", forecastDay.weatherDescription),
+          .attr("alt", forecastDay.weatherDescription)
+          .attr("crossorigin","anonymous"),
         cardIconP = $("<p>")
           .addClass("card-text")
           .append(cardIconImg),

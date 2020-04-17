@@ -5,7 +5,7 @@ let WeatherModel = {
   openWeatherApiKey: "4211a163bd8258f32fbd3c7ed8d5c12e",
 
   /*
-    Callback to notify of successful AJAX calls. Not wired up yet.
+    Callback to notify of successful AJAX calls.
    */
   successResponseCallback: null,
 
@@ -140,6 +140,7 @@ let WeatherModel = {
         console.log(successResponse);
         this.setCurrentWeather(successResponse);
         this.queryOpenWeatherUvIndex(successResponse);
+        this.successResponseCallback();
       },
       (failedResponse) => {
         this.alertAjaxError(queryUrl, failedResponse);
@@ -179,6 +180,8 @@ let WeatherModel = {
       (successResponse) => {
         this.currentWeather.uvIndex = this.getUvIndex(successResponse);
         this.currentWeather.uvIndexSeverity = this.getUvIndexSeverity();
+        this.successResponseCallback();
+
       },
       (failedResponse) => {
         this.alertAjaxError(failedResponse);
@@ -208,9 +211,14 @@ let WeatherModel = {
             humidity: this.getHumidity(day)
           });
         }
+        this.successResponseCallback();
       },
       (failedResponse) => {
         this.alertAjaxError(queryUrl, failedResponse);
+      },
+      (completeResponse) => {
+        console.log("hello")
+        console.log(this.isRequestSuccessful(completeResponse))
       }
     );
   },
@@ -252,10 +260,9 @@ let WeatherModel = {
         .split(",")
         .map(s => s.trim())
         .map(s => s.toLowerCase())
-        .map(s => s.replace(/\s/g, "+"))
-        .join(",");
+        .map(s => s.replace(/\s/g, "+"));
 
-      queryString = `?q=${query}`
+      queryString = `?q=${query.join(",")}`
     }
     return queryString + `&appid=${this.openWeatherApiKey}`
   },
@@ -293,7 +300,7 @@ let WeatherModel = {
 
 
   getWeatherIcon(response) {
-    return `http://openweathermap.org/img/wn/${response.weather[0].icon}.png`;
+    return `https://openweathermap.org/img/wn/${response.weather[0].icon}.png`;
   },
 
 
@@ -333,6 +340,12 @@ let WeatherModel = {
     } else {
       return "veryHigh";
     }
+  },
+
+  isRequestSuccessful(response) {
+    let responseCode = parseInt(response.cod);
+
+    return 200 === responseCode;
   },
 
 

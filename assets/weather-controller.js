@@ -15,8 +15,8 @@ let WeatherController = {
 
     this.model.start()
     this.model.setCallbacks(
-      WeatherController.updateDashboard,
-      WeatherController.reportFailure
+      () => WeatherController.updateDashboard(),
+      () => WeatherController.reportFailure
     );
 
     this.view.searchForm.setCallbacks(query => WeatherController.searchWeather(query));
@@ -29,13 +29,13 @@ let WeatherController = {
 
   searchWeather(query) {
     this.model.searchWeather(query);
-
-    // the timeout is a clunky workaround to fix an async issue. If we call this
-    // immediately, there won't be any results to show. I need to wire an event
-    // from the model to let fire this off only once the requests are done.
-    setTimeout(() => this.updateDashboard(), 1500);
+    this.updateDashboard();
   },
 
+
+  /*
+    Update the page elements with the latest information.    
+   */
   updateDashboard() {
     this.view.currentWeather.show(this.model.getCurrentWeather());
     this.view.fiveDayForecast.show(this.model.getFiveDayForecast());
