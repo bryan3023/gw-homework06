@@ -4,7 +4,7 @@
 
 This app is a simple weather dashboard. Enter a city name or zip code and you'll see both the current conditions and the five-day forecast for that location. Each search will be added to a locally saved list of places so you can pull them back up quikly in the future.
 
-[Try is now.](https://bryan3023.github.io/gw-homework06/)
+[Try it now.](https://bryan3023.github.io/gw-homework06/)
 
 ## Implementation
 
