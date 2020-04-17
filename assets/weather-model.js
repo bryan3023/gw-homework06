@@ -20,7 +20,7 @@ let WeatherModel = {
     uvIndexSeverity: null
   },
 
-  fiveDayForecast: null,
+  fiveDayForecast: [],
 
   start() {
     this.loadRecentLocations();
@@ -32,24 +32,31 @@ let WeatherModel = {
     this.failedResponseCallback = failedResponseCallback;
   },
 
+  searchWeather(query) {
+    this.addRecentLocation(query);
+    this.queryOwCurrentWeather(query);
+    this.queryOwFiveDayForecast(query);
+  },
+
+
   getCurrentWeather() {
     return this.currentWeather;
   },
 
-  convertKelvinToFahrenheit(tempKelvin) {
-    return (parseFloat(tempKelvin) - 273.15) * 1.80 + 32;
-  },
 
-  convertMetersPerSecondToMilesPerHour(speedMps) {
-    return speedMps * 2.2369363;
+  getRecentPlaces() {
+    return this.recentLocations;
   },
+  
 
   /*
     Add the location strng to the front of recent locations.
    */
   addRecentLocation(location) {
-    this.recentLocations.unshift(location);
-    this.saveRecentLocations();
+    if (-1 === this.recentLocations.indexOf(location)) {
+      this.recentLocations.unshift(location);
+      this.saveRecentLocations();
+    }
   },
 
 
@@ -78,9 +85,7 @@ let WeatherModel = {
   },
 
   queryOwCurrentWeather(query) {
-    let
-      queryUrl = this.getApiUrl(query, "weather"),
-      result;
+    let queryUrl = this.getApiUrl(query, "weather");
 
     $.ajax({
       url: queryUrl,
@@ -95,6 +100,44 @@ let WeatherModel = {
         this.alertAjaxError(queryUrl, failedResponse);
       }
     );
+  },
+
+  queryOwFiveDayForecast(query) {
+    let queryUrl = this.getApiUrl(query, "forecast");
+
+    $.ajax({
+      url: queryUrl,
+      type: "GET"
+    }).then(
+      (successResponse) => {
+        console.log(successResponse);
+
+        let days = successResponse.list.filter(w => w.dt_txt.includes("00:00:00"))
+
+        this.fiveDayForecast = [];
+
+        for (let day of days) {
+          this.fiveDayForecast.push({
+            date: moment.unix(parseInt(day.dt)).format("MM/DD"),
+            weatherDescription: day.weather[0].description,
+            weatherIcon: `http://openweathermap.org/img/wn/${day.weather[0].icon}.png`,
+            temperature: this.convertKelvinToFahrenheit(parseFloat(day.main.temp)).toFixed(1),
+            humidity: parseFloat(day.main.humidity)
+          });
+        }
+
+        console.log(this.fiveDayForecast)
+      },
+      (failedResponse) => {
+        this.alertAjaxError(queryUrl, failedResponse);
+      }
+    );
+
+  },
+
+  getFiveDayForecast() {
+    console.log(this.fiveDayForecast)
+    return this.fiveDayForecast;
   },
 
   queryOpenWeatherUvIndex(results) {
@@ -120,6 +163,8 @@ let WeatherModel = {
   },
 
 
+
+
   /*
     Categorize the UV index, using guidance here:
       https://www.epa.gov/sunsafety/uv-index-scale-0
@@ -133,11 +178,10 @@ let WeatherModel = {
     } else if (uvIndex <= 7) {
       return "moderate";
     } else {
-      return "very high";
+      return "veryHigh";
     }
   },
 
-  queryWeather() {},
 
   setCurrentWeather(response) {
     this.currentWeather.locationName = response.name;
@@ -195,5 +239,16 @@ let WeatherModel = {
       queryString = `?q=${query}`
     }
     return queryString + `&appid=${this.openWeatherApiKey}`
+  },
+
+
+  // -- Unit conversion functions --
+
+  convertKelvinToFahrenheit(tempKelvin) {
+    return (parseFloat(tempKelvin) - 273.15) * 1.80 + 32;
+  },
+
+  convertMetersPerSecondToMilesPerHour(speedMps) {
+    return speedMps * 2.2369363;
   }
 }
