@@ -64,15 +64,15 @@
           <!--
             Today's forecast
           -->
-          <div class="card mt-3">
-            <div class="card-header">
-              <h2>Washington, DC (4/14/2020)</h2>
-            </div>
+          <div id="current-weather" class="card mt-3">
             <div class="card-body">
-              <p class="card-text">Temperature: 90.1&deg;F</p>
-              <p class="card-text">Humidity: 41%</p>
-              <p class="card-text">Wind Speed: 4.7 MPH</p>
-              <p class="card-text">UV Index: <span class="badge badge-danger">9.49</span></p>
+              <h2 id="current-weather-header" class="card-title">Washington, DC (4/14/2020)</h2>
+              <div>
+                <p class="card-text">Temperature: 90.1&deg;F</p>
+                <p class="card-text">Humidity: 41%</p>
+                <p class="card-text">Wind Speed: 4.7 MPH</p>
+                <p class="card-text">UV Index: <span class="badge badge-danger">9.49</span></p>
+              </div>
             </div>
           </div>
 
@@ -151,6 +151,7 @@
     </main>
     
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 
     <script src="./assets/weather-model.js"></script>

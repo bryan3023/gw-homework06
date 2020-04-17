@@ -3,18 +3,46 @@
 let WeatherModel = {
 
   openWeatherApiKey: "4211a163bd8258f32fbd3c7ed8d5c12e",
+  successResponseCallback: null,
   failedResponseCallback: null,
 
   recentLocations: null,
 
-  currentWeather: null,
+  currentWeather: {
+    locationName: null,
+    date: null,
+    weatherDescription: null,
+    weatherIcon: null,
+    temperature: null,
+    humidity: null,
+    windSpeed: null,
+    uvIndex: null,
+    uvIndexSeverity: null
+  },
+
   fiveDayForecast: null,
 
-  start(failedResponseCallback) {
+  start() {
     this.loadRecentLocations();
+  },
+
+
+  setCallbacks(successResponseCallback, failedResponseCallback) {
+    this.successResponseCallback = successResponseCallback;
     this.failedResponseCallback = failedResponseCallback;
   },
 
+  getCurrentWeather() {
+    return this.currentWeather;
+  },
+
+  convertKelvinToFahrenheit(tempKelvin) {
+    return (parseFloat(tempKelvin) - 273.15) * 1.80 + 32;
+  },
+
+  convertMetersPerSecondToMilesPerHour(speedMps) {
+    return speedMps * 2.2369363;
+  },
 
   /*
     Add the location strng to the front of recent locations.
@@ -49,9 +77,9 @@ let WeatherModel = {
     localStorage.setItem("recentLocations", recentLocations);
   },
 
-  queryOpenWeather(query,queryType) {
+  queryOwCurrentWeather(query) {
     let
-      queryUrl = this.getApiUrl(query, queryType),
+      queryUrl = this.getApiUrl(query, "weather"),
       result;
 
     $.ajax({
@@ -59,12 +87,12 @@ let WeatherModel = {
       type: "GET"
     }).then(
       (successResponse) => {
-        result = this.getCurrentWeather(successResponse);
-        console.log(result);
+        console.log(successResponse);
+        this.setCurrentWeather(successResponse);
+        this.queryOpenWeatherUvIndex(successResponse);
       },
       (failedResponse) => {
         this.alertAjaxError(queryUrl, failedResponse);
-        this.failedResponseCallback(failedResponse);
       }
     );
   },
@@ -79,17 +107,16 @@ let WeatherModel = {
     $.ajax({
       url: queryUrl,
       type: "GET"
-    }).then(function(response) {
-      console.log(response)
-      console.log(parseFloat(response.value))
-      result = parseFloat(response.value);
-    },
-    function(failedResponse) {
-      this.alertAjaxError(failedResponse);
-    }
+    }).then(
+      (successResponse) => {
+        this.currentWeather.uvIndex = parseFloat(successResponse.value);
+        this.currentWeather.uvIndexSeverity = this.getUvIndexSeverity(this.currentWeather.uvIndex);
+      console.log(this.currentWeather.uvIndexSeverity)
+      },
+      (failedResponse) => {
+        this.alertAjaxError(failedResponse);
+      }
     )
-
-    return result;
   },
 
 
@@ -112,25 +139,23 @@ let WeatherModel = {
 
   queryWeather() {},
 
-  getCurrentWeather(response) {
-    let currentWeather = {
-      locationName: response.name,
-      weatherDescription: response.weather[0].description,
-      weatherIcon: response.weather[0].icon,
-      temperature: response.main.temp,
-      humidity: response.main.humidity,
-      windSpeed: response.wind.speed,
-      uvIndex: this.queryOpenWeatherUvIndex(response)
-    }
-
-    currentWeather.uvIndexSeverity = this.getUvIndexSeverity(currentWeather.uvIndex);
-    return currentWeather;
+  setCurrentWeather(response) {
+    this.currentWeather.locationName = response.name;
+    this.currentWeather.date = moment().format("MM/DD/YYYY");
+    this.currentWeather.weatherDescription = response.weather[0].description;
+    this.currentWeather.weatherIcon =  `http://openweathermap.org/img/wn/${response.weather[0].icon}.png`;
+    this.currentWeather.temperature = this.convertKelvinToFahrenheit(parseFloat(response.main.temp)).toFixed(1);
+    this.currentWeather.humidity = parseFloat(response.main.humidity);
+    this.currentWeather.windSpeed = this.convertMetersPerSecondToMilesPerHour(parseFloat(response.wind.speed)).toFixed(1);
   },
 
   alertAjaxError(queryUrl, xhr) {
     console.log("Error on query: %s\n  status: %s\n  message: %s",
-      queryUrl, xhr.status, xhr.responseJSON.message)
-
+      queryUrl,
+      xhr.status,
+      xhr.responseJSON.message
+    );
+    this.failedResponseCallback(xhr);
   },
 
   getApiUrl(query,queryType) {

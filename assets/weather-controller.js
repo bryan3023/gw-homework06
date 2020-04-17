@@ -9,10 +9,25 @@ let WeatherController = {
     this.model = WeatherModel;
     this.view = WeatherView;
 
-    this.model.start(WeatherController.alertAjaxFailure);
+    this.model.start()
+    this.model.setCallbacks(
+      WeatherController.updateDashboard,
+      WeatherController.reportFailure
+    );
   },
 
-  alertAjaxFailure(xhr) {
+
+  updateDashboard() {
+    console.log(this.model.getCurrentWeather());
+    this.view.currentWeather.show(this.model.getCurrentWeather());
+  },
+
+
+  /*
+    Show an error if the AJAX call for some reason.
+    TODO: Revisit to make more user-friendly than an alert.
+   */
+  reportFailure(xhr) {
     alert(xhr.responseJSON.message);
   }
 }
