@@ -28,6 +28,8 @@ let WeatherController = {
     let mostRecent = this.model.getMostRecentPlace();
     if (mostRecent) {
       this.searchWeather(mostRecent);
+    } else {
+      this.view.hideDashboard();
     }
   },
 
