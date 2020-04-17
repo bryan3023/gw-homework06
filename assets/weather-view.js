@@ -6,8 +6,15 @@ let WeatherView = {
     The search bar on the left side
    */
   searchForm: {
+
+    /*
+      Callback to run the search query with the provided text.
+     */
     searchCallback: null,
 
+    /*
+      Wire in the event handler for the search form.
+     */
     show() {
       $("#weather-search").on("submit", (response) => {
         event.preventDefault();
@@ -27,8 +34,16 @@ let WeatherView = {
     The list of recent searchs on the left side.
    */
   recentPlaces: {
+
+    /*
+      Callback to run the search of the clicked link.
+     */
     searchCallback: null,
 
+
+    /*
+      Render the list of recent places.
+     */
     show(recentPlaces) {
       let recent = $("#weather-recent");
 
@@ -53,7 +68,15 @@ let WeatherView = {
     }
   },
 
+
+  /*
+    The current weather card on the top-half of the main dashboard.
+   */
   currentWeather: {
+
+    /*
+      Render the current weather card.
+     */
     show(currentWeather) {
       let
         currentWeatherHeader = $("#current-weather div h2"),
@@ -77,12 +100,20 @@ let WeatherView = {
       currentWeatherBody.append(this.getUvStatus(currentWeather));
     },
 
+
+    /*
+      Return a paragraph within the card.
+     */
     getCardText(text) {
       return $("<p>")
         .addClass("card-text")
         .text(text);
     },
 
+
+    /*
+      Return a paragraph with a color-coded UV index.
+     */
     getUvStatus(currentWeather) {
       let
         uvP = $("<p>"),
@@ -110,7 +141,15 @@ let WeatherView = {
     }
   },
 
+
+  /*
+    The five-day forecast on the lower half of the main dashboard.
+   */
   fiveDayForecast: {
+  
+    /*
+      Render the five-day forecast on the dashboard.
+     */
     show(fiveDayForecast) {
       let forecastCards = $("#five-day-forecast");
       forecastCards.empty();
@@ -121,18 +160,21 @@ let WeatherView = {
     },
 
 
-  //   <div class="col-sm-6 col-md-3 col-xl-2 mb-3 mb-sm-4">
-  //   <div class="card bg-primary text-light">
-  //     <div class="card-body">
-  //       <h5 class="card-title">4/15/2020</h5>
-  //       <p class="card-text">[icon]</p>
-  //       <p class="card-text">Temp: 86.84 F</p>
-  //       <p class="card-text">Humidity: 43%</p>
-  //     </div>
-  //   </div>
-  // </div>
+    /*
+      Return a new card for a given day of a foreacaste. We're creating an
+      HTML snippet in the following format:
 
-
+        <div class="col-sm-6 col-md-3 col-xl-2 mb-3 mb-sm-4">
+          <div class="card bg-primary text-light">
+            <div class="card-body">
+              <h5 class="card-title">4/15/2020</h5>
+              <p class="card-text">[icon]</p>
+              <p class="card-text">Temp: 86.84 F</p>
+              <p class="card-text">Humidity: 43%</p>
+            </div>
+          </div>
+        </div>
+    */
     getForecastCard(forecastDay) {
       let
         cardHeader = $("<h5>")
@@ -172,8 +214,9 @@ let WeatherView = {
 
 
       return cardColDiv;
-    }
+    },
   },
+
 
   hideDashboard() {
     $("#weather-info").hide();

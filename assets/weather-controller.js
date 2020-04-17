@@ -24,9 +24,17 @@ let WeatherController = {
 
     this.view.searchForm.show();
     this.view.recentPlaces.show(this.model.getRecentPlaces());
-    this.view.hideDashboard();
+
+    let mostRecent = this.model.getMostRecentPlace();
+    if (mostRecent) {
+      this.searchWeather(mostRecent);
+    }
   },
 
+
+  /*
+    Run the specified search and update the dashboard.
+   */
   searchWeather(query) {
     this.model.searchWeather(query);
     this.updateDashboard();

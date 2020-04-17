@@ -59,6 +59,14 @@ let WeatherModel = {
 
   // --- Getters for the controller ---
 
+  getMostRecentPlace() {
+    if (this.recentLocations.length) {
+      return this.recentLocations[0];
+    } else {
+      return null;
+    }
+  },
+
   getRecentPlaces() {
     return this.recentLocations;
   },
@@ -77,14 +85,17 @@ let WeatherModel = {
   // --- Methods to manage the recent locations list ---
 
   /*
-    If the use searchs for a new location, add it to the front of
-    the list of recent locations.
+    Add a user's search to the front of the array. If the location is
+    already there, remove it first.
    */
   addRecentLocation(location) {
-    if (-1 === this.recentLocations.indexOf(location)) {
-      this.recentLocations.unshift(location);
-      this.saveRecentLocations();
+    let index = this.recentLocations.indexOf(location);
+
+    if (-1 !== index) {
+      this.recentLocations.splice(index, 1);
     }
+    this.recentLocations.unshift(location);
+    this.saveRecentLocations();
   },
 
 
@@ -340,12 +351,6 @@ let WeatherModel = {
     } else {
       return "veryHigh";
     }
-  },
-
-  isRequestSuccessful(response) {
-    let responseCode = parseInt(response.cod);
-
-    return 200 === responseCode;
   },
 
 
